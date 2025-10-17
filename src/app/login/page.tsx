@@ -27,13 +27,14 @@ import { SignInSchema, type SignInForm } from '@/lib/types';
 import { FirebaseError } from 'firebase/app';
 import { LogIn } from 'lucide-react';
 import Link from 'next/link';
-import { signInWithEmail } from '@/firebase/auth/use-user';
+import { useSignInWithEmail } from '@/firebase/auth/use-user';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const signInWithEmail = useSignInWithEmail();
 
   const form = useForm<SignInForm>({
     resolver: zodResolver(SignInSchema),

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type DonationCategory = "clothes" | "food" | "toys" | "electronics" | "furniture" | "books";
+export type DonationCategory = string;
 
 export interface DonationPoint {
   id: string;
@@ -25,3 +25,10 @@ export const SignInSchema = z.object({
   password: z.string().min(1, { message: "A senha é obrigatória." }),
 });
 export type SignInForm = z.infer<typeof SignInSchema>;
+
+export interface UserProfile {
+    uid: string;
+    email: string;
+    name?: string;
+    role: 'admin' | 'user';
+}

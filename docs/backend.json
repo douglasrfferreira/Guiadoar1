@@ -28,15 +28,7 @@
         "acceptedItems": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": [
-              "clothes",
-              "food",
-              "toys",
-              "electronics",
-              "furniture",
-              "books"
-            ]
+            "type": "string"
           },
           "description": "A list of donation categories accepted at this point."
         }
@@ -67,14 +59,33 @@
         "name": {
           "type": "string",
           "description": "The user's display name."
+        },
+        "role": {
+            "type": "string",
+            "enum": ["user", "admin"],
+            "description": "The user's role."
         }
       },
-      "required": ["uid", "email"]
+      "required": ["uid", "email", "role"]
+    },
+    "CategoryConfig": {
+        "title": "Category Configuration",
+        "description": "Stores the mapping of category keys to display names.",
+        "type": "object",
+        "properties": {
+            "names": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                },
+                "description": "A map of category keys (e.g., 'clothes') to their display names (e.g., 'Roupas')."
+            }
+        },
+        "required": ["names"]
     }
   },
   "auth": {
     "providers": [
-      "google.com",
       "password"
     ]
   },
@@ -89,7 +100,13 @@
       "schema": {
         "$ref": "#/entities/User"
       },
-      "description": "Stores user profile information."
+      "description": "Stores user profile information, including their role."
+    },
+    "/app-config/categories": {
+      "schema": {
+          "$ref": "#/entities/CategoryConfig"
+      },
+      "description": "Stores global application configuration, such as donation categories."
     }
   }
 }

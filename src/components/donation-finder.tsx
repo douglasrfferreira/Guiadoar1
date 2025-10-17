@@ -11,7 +11,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, LocateFixed, TriangleAlert } from 'lucide-react';
 import { DonationPointList } from './donation-point-list';
 import { useToast } from "@/hooks/use-toast";
-import { categoryNames } from '@/components/icons';
+import { categoryNames, getCategories } from '@/components/icons';
+import { useUser } from '@/firebase';
 
 export function DonationFinder() {
   const [itemDescription, setItemDescription] = useState('');
@@ -20,17 +21,30 @@ export function DonationFinder() {
   const [error, setError] = useState<string | null>(null);
   const [allDonationPoints, setAllDonationPoints] = useState<DonationPoint[]>([]);
   const { toast } = useToast();
+  const { profile } = useUser();
+  const [currentCategories, setCurrentCategories] = useState(categoryNames);
 
   useEffect(() => {
-    setAllDonationPoints(getDonationPoints());
+    // Fetches donation points and categories
+    const unsubscribePoints = getDonationPoints((points) => {
+        setAllDonationPoints(points);
+    });
+    const unsubscribeCategories = getCategories((cats) => {
+        setCurrentCategories(cats);
+    });
+
+    return () => {
+        unsubscribePoints();
+        unsubscribeCategories();
+    }
   }, []);
 
   const getCategoryFromDescription = (description: string): DonationCategory | null => {
     if (!description) return null;
     const lowerCaseDescription = description.toLowerCase().trim();
-    for (const key in categoryNames) {
+    for (const key in currentCategories) {
       const category = key as DonationCategory;
-      if (categoryNames[category].toLowerCase() === lowerCaseDescription) {
+      if (currentCategories[category].toLowerCase() === lowerCaseDescription) {
         return category;
       }
     }
@@ -42,9 +56,6 @@ export function DonationFinder() {
     setIsLoading(true);
     setError(null);
     setFoundPoints([]);
-
-    // Refresh points before search
-    setAllDonationPoints(getDonationPoints());
 
     if (!navigator.geolocation) {
       setError("Geolocalização não é suportada pelo seu navegador.");
@@ -147,7 +158,7 @@ export function DonationFinder() {
       )}
 
       {!isLoading && foundPoints.length > 0 && (
-        <DonationPointList points={foundPoints} />
+        <DonationPointList points={foundPoints} userProfile={profile} />
       )}
       
       {!isLoading && foundPoints.length === 0 && !error && (

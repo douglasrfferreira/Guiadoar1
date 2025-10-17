@@ -2,11 +2,43 @@ import { DonationFinder } from '@/components/donation-finder';
 import { Header } from '@/components/header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddDonationPoint } from '@/components/add-donation-point';
-import { MapPin, PlusCircle, LogIn } from 'lucide-react';
+import { MapPin, PlusCircle, LogIn, Shield } from 'lucide-react';
 import { AuthGate } from '@/components/auth-gate';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { AdminDashboard } from '@/components/admin-dashboard';
+import { useUser } from '@/firebase';
+
+function AdminGate({ children }: { children: React.ReactNode }) {
+    const { user, profile, loading } = useUser();
+  
+    if (loading) {
+      return null;
+    }
+  
+    if (!user || profile?.role !== 'admin') {
+      return (
+        <div className="text-center py-10">
+          <div className="flex flex-col items-center gap-4">
+            <LogIn className="w-12 h-12 text-muted-foreground" />
+            <h3 className="text-xl font-bold">Acesso Restrito</h3>
+            <p className="text-muted-foreground max-w-md">
+              Esta área é restrita aos administradores. Por favor, faça login com uma conta de administrador para continuar.
+            </p>
+            <div className="flex gap-4 mt-4">
+              <Button asChild>
+                <Link href="/login">Fazer Login</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  
+    return <>{children}</>;
+  }
+
 
 export default function Home() {
   return (
@@ -20,38 +52,18 @@ export default function Home() {
                 <MapPin className="mr-2" />
                 Encontrar Pontos
               </TabsTrigger>
-              <TabsTrigger value="register">
-                <PlusCircle className="mr-2" />
-                Cadastrar Ponto
+              <TabsTrigger value="admin">
+                <Shield className="mr-2" />
+                Administração
               </TabsTrigger>
             </TabsList>
             <TabsContent value="finder">
               <DonationFinder />
             </TabsContent>
-            <TabsContent value="register">
-              <AuthGate
-                unauthenticatedContent={
-                  <div className="text-center py-10">
-                     <div className="flex flex-col items-center gap-4">
-                        <LogIn className="w-12 h-12 text-muted-foreground" />
-                        <h3 className="text-xl font-bold">Acesso Restrito</h3>
-                        <p className="text-muted-foreground max-w-md">
-                          Para cadastrar um novo ponto de coleta, você precisa fazer login. Isso garante a qualidade e a segurança das informações em nossa plataforma.
-                        </p>
-                        <div className="flex gap-4 mt-4">
-                          <Button asChild>
-                            <Link href="/login">Fazer Login</Link>
-                          </Button>
-                          <Button asChild variant="outline">
-                            <Link href="/signup">Criar Conta</Link>
-                          </Button>
-                        </div>
-                      </div>
-                  </div>
-                }
-              >
-                <AddDonationPoint />
-              </AuthGate>
+            <TabsContent value="admin">
+                <AdminGate>
+                    <AdminDashboard />
+                </AdminGate>
             </TabsContent>
           </Tabs>
         </main>

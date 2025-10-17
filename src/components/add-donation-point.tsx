@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { addDonationPoint } from "@/lib/donation-points";
-import { categoryNames } from "@/components/icons";
+import { getCategories } from "@/components/icons";
 import type { DonationCategory } from "@/lib/types";
 import { PlusCircle, Send, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,6 +19,12 @@ export function AddDonationPoint() {
   const [hours, setHours] = useState("");
   const [acceptedItems, setAcceptedItems] = useState<DonationCategory[]>([]);
   const { toast } = useToast();
+  const [categories, setCategories] = useState<Record<DonationCategory, string>>({});
+
+  useEffect(() => {
+    const unsubscribe = getCategories(setCategories);
+    return () => unsubscribe();
+  }, []);
 
   const handleCheckboxChange = (category: DonationCategory) => {
     setAcceptedItems(prev =>
@@ -28,7 +34,7 @@ export function AddDonationPoint() {
     );
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!name || !address || !hours || acceptedItems.length === 0) {
@@ -42,26 +48,35 @@ export function AddDonationPoint() {
     
     // As a real implementation would need a geocoding service to get lat/lng from address,
     // we'll use placeholder coordinates for now.
-    addDonationPoint({
-        name,
-        address,
-        hours,
-        acceptedItems,
-        lat: -23.31, // Placeholder
-        lng: -51.16, // Placeholder
-    });
+    try {
+      await addDonationPoint({
+          name,
+          address,
+          hours,
+          acceptedItems,
+          lat: -23.31, // Placeholder
+          lng: -51.16, // Placeholder
+      });
 
+      toast({
+        title: "Ponto de Doação Adicionado!",
+        description: `O ponto "${name}" foi adicionado. Ele já está visível na busca.`,
+      });
+  
+      // Reset form
+      setName("");
+      setAddress("");
+      setHours("");
+      setAcceptedItems([]);
 
-    toast({
-      title: "Ponto de Doação Adicionado!",
-      description: `O ponto "${name}" foi adicionado. Ele já está visível na busca.`,
-    });
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao Adicionar",
+        description: "Você não tem permissão para adicionar pontos de doação.",
+      });
+    }
 
-    // Reset form
-    setName("");
-    setAddress("");
-    setHours("");
-    setAcceptedItems([]);
   };
 
   return (
@@ -92,7 +107,7 @@ export function AddDonationPoint() {
             <div className="space-y-4">
                 <Label className="text-base">Itens Aceitos</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {(Object.keys(categoryNames) as DonationCategory[]).map(category => (
+                    {(Object.keys(categories) as DonationCategory[]).map(category => (
                         <div key={category} className="flex items-center space-x-2">
                             <Checkbox 
                                 id={category} 
@@ -103,7 +118,7 @@ export function AddDonationPoint() {
                                 htmlFor={category}
                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                                {categoryNames[category]}
+                                {categories[category]}
                             </label>
                         </div>
                     ))}

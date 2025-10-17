@@ -11,15 +11,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser, signOutUser } from '@/firebase/auth/use-user';
+import { useUser, useSignOut } from '@/firebase/auth/use-user';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 export function Header() {
   const { user, loading } = useUser();
+  const signOut = useSignOut();
 
   const handleSignOut = async () => {
-    await signOutUser();
+    await signOut();
   };
   
   return (
