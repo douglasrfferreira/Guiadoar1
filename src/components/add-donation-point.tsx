@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { addDonationPoint } from "@/lib/donation-points";
 import { categoryNames } from "@/components/icons";
 import type { DonationCategory } from "@/lib/types";
-import { PlusCircle, Send } from "lucide-react";
+import { PlusCircle, Send, TriangleAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function AddDonationPoint() {
   const [name, setName] = useState("");
