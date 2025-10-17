@@ -1,10 +1,13 @@
-"use client";
+
+'use client';
 
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, onSnapshot, DocumentData } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import type { SignUpForm, SignInForm, UserProfile } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 export const useUser = () => {
@@ -35,8 +38,16 @@ export const useUser = () => {
         return;
     };
 
-    const unsubProfile = onSnapshot(doc(firestore, `users/${user.uid}`), (snap) => {
+    const docRef = doc(firestore, `users/${user.uid}`);
+    const unsubProfile = onSnapshot(docRef, (snap) => {
         setProfile(snap.data() as UserProfile | null);
+        setLoading(false);
+    }, (error) => {
+        const contextualError = new FirestorePermissionError({
+            operation: 'get',
+            path: docRef.path
+        });
+        errorEmitter.emit('permission-error', contextualError);
         setLoading(false);
     });
 
@@ -55,19 +66,25 @@ export const signUpWithEmailAndPassword = async ({ name, email, password }: Sign
 
     await updateProfile(user, { displayName: name });
     
-    // Create user profile in Firestore
-    const userProfile: UserProfile = {
+    const userProfileData: UserProfile = {
         uid: user.uid,
         email: user.email!,
         name: name,
-        role: 'user', // Default role
+        role: 'user', 
     };
-    await setDoc(doc(firestore, 'users', user.uid), userProfile);
+
+    const docRef = doc(firestore, 'users', user.uid);
+    setDoc(docRef, userProfileData).catch(error => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: docRef.path,
+        operation: 'create',
+        requestResourceData: userProfileData
+      }));
+    });
 
     return userCredential;
 };
 
-// This needs to be called from a client component with access to the initialized firebase instances
 const _signInWithEmail = (auth: ReturnType<useAuth>) => async ({ email, password }: SignInForm) => {
     if (!auth) throw new Error("Auth service is not available.");
     return await signInWithEmailAndPassword(auth, email, password);
@@ -92,6 +109,4 @@ export function useSignOut() {
     return _signOut(auth);
 }
 
-
-// To avoid circular dependencies and ensure firebase is initialized
 import { initializeFirebase } from '..';
