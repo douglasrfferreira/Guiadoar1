@@ -12,6 +12,9 @@ let firestore: Firestore;
 
 function initializeFirebase() {
   if (getApps().length === 0) {
+    if (!firebaseConfig.apiKey) {
+      throw new Error("Firebase API key is missing. Please check your configuration.");
+    }
     firebaseApp = initializeApp(firebaseConfig);
   } else {
     firebaseApp = getApp();

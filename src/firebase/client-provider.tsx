@@ -2,13 +2,15 @@
 
 import { initializeFirebase } from ".";
 import { FirebaseProvider } from "./provider";
+import { useMemo } from "react";
 
 export const FirebaseClientProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const { firebaseApp, firestore, auth } = initializeFirebase();
+  const { firebaseApp, firestore, auth } = useMemo(() => initializeFirebase(), []);
+  
   return (
     <FirebaseProvider
       firebaseApp={firebaseApp}
