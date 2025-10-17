@@ -1,6 +1,6 @@
 import type { DonationPoint } from './types';
 
-export const donationPoints: DonationPoint[] = [
+let donationPoints: DonationPoint[] = [
   {
     id: 1,
     name: "Exército de Salvação",
@@ -56,3 +56,14 @@ export const donationPoints: DonationPoint[] = [
     acceptedItems: ["toys", "books", "clothes"],
   }
 ];
+
+export const getDonationPoints = () => [...donationPoints];
+
+export const addDonationPoint = (point: Omit<DonationPoint, 'id' | 'distance'>) => {
+  const newPoint: DonationPoint = {
+    ...point,
+    id: donationPoints.length > 0 ? Math.max(...donationPoints.map(p => p.id)) + 1 : 1,
+  };
+  donationPoints.push(newPoint);
+  return newPoint;
+}

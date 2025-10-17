@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { DonationPoint, DonationCategory } from '@/lib/types';
-import { donationPoints as allDonationPoints } from '@/lib/donation-points';
+import { getDonationPoints } from '@/lib/donation-points';
 import { haversineDistance } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,12 @@ export function DonationFinder() {
   const [foundPoints, setFoundPoints] = useState<DonationPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [allDonationPoints, setAllDonationPoints] = useState<DonationPoint[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setAllDonationPoints(getDonationPoints());
+  }, []);
 
   const getCategoryFromDescription = (description: string): DonationCategory | null => {
     if (!description) return null;
@@ -37,6 +42,9 @@ export function DonationFinder() {
     setIsLoading(true);
     setError(null);
     setFoundPoints([]);
+
+    // Refresh points before search
+    setAllDonationPoints(getDonationPoints());
 
     if (!navigator.geolocation) {
       setError("Geolocalização não é suportada pelo seu navegador.");
@@ -93,7 +101,7 @@ export function DonationFinder() {
   };
   
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
+    <div className="w-full space-y-8 mt-4">
       <Card className="shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-headline">Facilite sua Doação</CardTitle>
