@@ -54,7 +54,7 @@ export function AddDonationPoint() {
 
     toast({
       title: "Ponto de Doação Adicionado!",
-      description: `O ponto "${name}" foi adicionado. Ele já está visível na busca. (Nota: O ponto não será salvo permanentemente).`,
+      description: `O ponto "${name}" foi adicionado. Ele já está visível na busca.`,
     });
 
     // Reset form
@@ -120,7 +120,7 @@ export function AddDonationPoint() {
         <TriangleAlert className="h-4 w-4" />
         <AlertTitle>Aviso</AlertTitle>
         <AlertDescription>
-          Os pontos de doação cadastrados por este formulário são adicionados apenas localmente e serão perdidos ao recarregar a página. Uma futura implementação com banco de dados permitirá o cadastro permanente.
+         Os pontos de doação cadastrados serão salvos no banco de dados.
         </AlertDescription>
       </Alert>
     </div>

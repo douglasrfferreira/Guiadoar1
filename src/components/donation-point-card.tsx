@@ -29,7 +29,7 @@ export function DonationPointCard({ point }: DonationPointCardProps) {
                 Itens Aceitos
             </h4>
             <div className="flex flex-wrap gap-2">
-            {point.acceptedItems.map((item) => {
+            {point.acceptedItems && point.acceptedItems.map((item) => {
                 const Icon = categoryIcons[item];
                 return (
                 <Badge key={item} variant="secondary" className="flex items-center gap-1.5 py-1 px-2">
@@ -41,11 +41,13 @@ export function DonationPointCard({ point }: DonationPointCardProps) {
             </div>
         </div>
       </CardContent>
-      <CardFooter>
-        <div className="w-full text-right font-bold text-primary">
-            Aproximadamente {point.distance?.toFixed(1)} km de distância
-        </div>
-      </CardFooter>
+      {point.distance && (
+        <CardFooter>
+            <div className="w-full text-right font-bold text-primary">
+                Aproximadamente {point.distance?.toFixed(1)} km de distância
+            </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }

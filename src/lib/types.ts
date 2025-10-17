@@ -1,7 +1,7 @@
 export type DonationCategory = "clothes" | "food" | "toys" | "electronics" | "furniture" | "books";
 
 export interface DonationPoint {
-  id: number;
+  id: string;
   name: string;
   address: string;
   lat: number;

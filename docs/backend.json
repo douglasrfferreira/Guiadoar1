@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "DonationPoint": {
+      "title": "Donation Point",
+      "description": "Represents a location where donations can be dropped off.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the donation point."
+        },
+        "address": {
+          "type": "string",
+          "description": "The full address of the donation point."
+        },
+        "lat": {
+          "type": "number",
+          "description": "The latitude of the donation point."
+        },
+        "lng": {
+          "type": "number",
+          "description": "The longitude of the donation point."
+        },
+        "hours": {
+          "type": "string",
+          "description": "The opening hours of the donation point."
+        },
+        "acceptedItems": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "clothes",
+              "food",
+              "toys",
+              "electronics",
+              "furniture",
+              "books"
+            ]
+          },
+          "description": "A list of donation categories accepted at this point."
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "lat",
+        "lng",
+        "hours",
+        "acceptedItems"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "google.com"
+    ]
+  },
+  "firestore": {
+    "/donation-points/{donationPointId}": {
+      "schema": {
+        "$ref": "#/entities/DonationPoint"
+      },
+      "description": "Stores information about each donation point."
+    }
+  }
+}
