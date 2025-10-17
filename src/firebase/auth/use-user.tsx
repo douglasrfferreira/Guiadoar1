@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useAuth } from '@/firebase';
+import type { SignUpForm, SignInForm } from '@/lib/types';
+
 
 export const useUser = () => {
   const auth = useAuth();
@@ -23,6 +25,29 @@ export const useUser = () => {
 
   return { user, loading };
 };
+
+export const signUpWithEmailAndPassword = async ({ name, email, password }: SignUpForm) => {
+    const auth = useAuth();
+    if (!auth) throw new Error("Auth service is not available.");
+    
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
+    if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+            displayName: name,
+        });
+    }
+
+    return userCredential;
+};
+
+export const signInWithEmail = async ({ email, password }: SignInForm) => {
+    const auth = useAuth();
+    if (!auth) throw new Error("Auth service is not available.");
+    
+    return await signInWithEmailAndPassword(auth, email, password);
+};
+
 
 export const googleSignIn = async () => {
     const auth = useAuth();

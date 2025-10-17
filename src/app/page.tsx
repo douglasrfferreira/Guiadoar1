@@ -5,6 +5,8 @@ import { AddDonationPoint } from '@/components/add-donation-point';
 import { MapPin, PlusCircle, LogIn } from 'lucide-react';
 import { AuthGate } from '@/components/auth-gate';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   return (
@@ -36,6 +38,14 @@ export default function Home() {
                         <p className="text-muted-foreground max-w-md">
                           Para cadastrar um novo ponto de coleta, você precisa fazer login. Isso garante a qualidade e a segurança das informações em nossa plataforma.
                         </p>
+                        <div className="flex gap-4 mt-4">
+                          <Button asChild>
+                            <Link href="/login">Fazer Login</Link>
+                          </Button>
+                          <Button asChild variant="outline">
+                            <Link href="/signup">Criar Conta</Link>
+                          </Button>
+                        </div>
                       </div>
                   </div>
                 }
