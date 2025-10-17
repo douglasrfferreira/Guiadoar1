@@ -1,112 +1,179 @@
 {
   "entities": {
-    "DonationPoint": {
-      "title": "Donation Point",
-      "description": "Represents a location where donations can be dropped off.",
+    "DonationItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DonationItem",
       "type": "object",
+      "description": "Represents an item that a user wants to donate.",
       "properties": {
-        "name": {
+        "id": {
           "type": "string",
-          "description": "The name of the donation point."
+          "description": "Unique identifier for the DonationItem entity."
         },
-        "address": {
+        "userId": {
           "type": "string",
-          "description": "The full address of the donation point."
+          "description": "Reference to User who is donating the item. (Relationship: User 1:N DonationItem)"
         },
-        "lat": {
-          "type": "number",
-          "description": "The latitude of the donation point."
-        },
-        "lng": {
-          "type": "number",
-          "description": "The longitude of the donation point."
-        },
-        "hours": {
+        "type": {
           "type": "string",
-          "description": "The opening hours of the donation point."
+          "description": "The type of item being donated (e.g., clothes, books, furniture)."
         },
-        "acceptedItems": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "A list of donation categories accepted at this point."
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the item."
         }
       },
       "required": [
-        "name",
-        "address",
-        "lat",
-        "lng",
-        "hours",
-        "acceptedItems"
+        "id",
+        "userId",
+        "type",
+        "description"
       ]
     },
-    "User": {
-      "title": "User",
-      "description": "Represents a user of the application.",
+    "DonationPoint": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DonationPoint",
       "type": "object",
+      "description": "Represents a donation collection point.",
       "properties": {
-        "uid": {
+        "id": {
           "type": "string",
-          "description": "The user's unique ID."
-        },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "The user's email address."
+          "description": "Unique identifier for the DonationPoint entity."
         },
         "name": {
           "type": "string",
-          "description": "The user's display name."
+          "description": "The name of the donation point (e.g., 'Salvation Army', 'Local Church')."
         },
-        "role": {
-            "type": "string",
-            "enum": ["user", "admin"],
-            "description": "The user's role."
+        "address": {
+          "type": "string",
+          "description": "The address of the donation point."
+        },
+        "openingHours": {
+          "type": "string",
+          "description": "The opening hours of the donation point."
+        },
+        "acceptedItemTypes": {
+          "type": "array",
+          "description": "A list of item types accepted at this donation point.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "latitude": {
+          "type": "number",
+          "description": "The latitude coordinate of the donation point."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "The longitude coordinate of the donation point."
         }
       },
-      "required": ["uid", "email", "role"]
+      "required": [
+        "id",
+        "name",
+        "address",
+        "openingHours",
+        "acceptedItemTypes",
+        "latitude",
+        "longitude"
+      ]
     },
-    "CategoryConfig": {
-        "title": "Category Configuration",
-        "description": "Stores the mapping of category keys to display names.",
-        "type": "object",
-        "properties": {
-            "names": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "string"
-                },
-                "description": "A map of category keys (e.g., 'clothes') to their display names (e.g., 'Roupas')."
-            }
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
         },
-        "required": ["names"]
+        "name": {
+          "type": "string",
+          "description": "The name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "locationLat": {
+          "type": "number",
+          "description": "The latitude of the user's location"
+        },
+        "locationLon": {
+          "type": "number",
+          "description": "The longitude of the user's location"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email"
+      ]
     }
   },
   "auth": {
     "providers": [
-      "password"
+      "password",
+      "anonymous"
     ]
   },
   "firestore": {
-    "/donation-points/{donationPointId}": {
-      "schema": {
-        "$ref": "#/entities/DonationPoint"
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. The 'userId' is the Firebase Auth UID. Access is restricted to the authenticated user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
       },
-      "description": "Stores information about each donation point."
-    },
-    "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/User"
+      {
+        "path": "/users/{userId}/donationItems/{donationItemId}",
+        "definition": {
+          "entityName": "DonationItem",
+          "schema": {
+            "$ref": "#/backend/entities/DonationItem"
+          },
+          "description": "Stores donation items created by the user. Access is restricted to the authenticated user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user who created the donation item."
+            },
+            {
+              "name": "donationItemId",
+              "description": "The unique ID of the donation item."
+            }
+          ]
+        }
       },
-      "description": "Stores user profile information, including their role."
-    },
-    "/app-config/categories": {
-      "schema": {
-          "$ref": "#/entities/CategoryConfig"
-      },
-      "description": "Stores global application configuration, such as donation categories."
-    }
+      {
+        "path": "/donationPoints/{donationPointId}",
+        "definition": {
+          "entityName": "DonationPoint",
+          "schema": {
+            "$ref": "#/backend/entities/DonationPoint"
+          },
+          "description": "Stores donation points. Access is public.",
+          "params": [
+            {
+              "name": "donationPointId",
+              "description": "The unique ID of the donation point."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to securely manage user data, donation items, and donation points for the GuiaDoar application. It prioritizes authorization independence to ensure robust security rules and efficient data access. The core structure consists of three main collections: `users`, `donationItems`, and `donationPoints`. \n\n*   **Users:** User data is stored under the `/users/{userId}` path. This private data follows Path-Based ownership. Only the authenticated user can access their own data.\n*   **DonationItems:** Donation items are stored under `/users/{userId}/donationItems/{donationItemId}`. This structure follows Hierarchical Paths for User-Owned Data, enabling easy ownership-based security rules. The `userId` field within the `DonationItem` entity is redundant given that the path already encodes the owner; however, it makes queries easier and more explicit from a data perspective.\n*   **DonationPoints:** Donation points are stored in the `/donationPoints/{donationPointId}` collection. Access to these points is public. They are global and not user-specific.\n\n**Authorization Independence:** This design avoids hierarchical authorization dependencies by not relying on `get()` calls in security rules. Ownership is enforced directly via path-based rules for user and donation items. This ensures that atomic operations (transactions and batches) are not broken and simplifies debugging.\n\n**QAPs (Rules are not Filters):** The structure supports secure `list` operations by segregating data with different access needs into separate collections. Listing donation points is straightforward since they are public. Listing donation items is secure because it is scoped to the user's own collection.\n\nThis design promotes clarity of intent, simplifies security rules, and maintains the integrity of ownership and data consistency across the GuiaDoar application."
   }
 }
