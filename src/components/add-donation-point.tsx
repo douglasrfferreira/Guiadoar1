@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,7 +35,7 @@ export function AddDonationPoint() {
     );
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!name || !address || !hours || acceptedItems.length === 0) {
@@ -48,35 +49,25 @@ export function AddDonationPoint() {
     
     // As a real implementation would need a geocoding service to get lat/lng from address,
     // we'll use placeholder coordinates for now.
-    try {
-      await addDonationPoint({
-          name,
-          address,
-          hours,
-          acceptedItems,
-          lat: -23.31, // Placeholder
-          lng: -51.16, // Placeholder
-      });
+    addDonationPoint({
+        name,
+        address,
+        hours,
+        acceptedItems,
+        lat: -23.31, // Placeholder
+        lng: -51.16, // Placeholder
+    });
 
-      toast({
-        title: "Ponto de Doação Adicionado!",
-        description: `O ponto "${name}" foi adicionado. Ele já está visível na busca.`,
-      });
-  
-      // Reset form
-      setName("");
-      setAddress("");
-      setHours("");
-      setAcceptedItems([]);
+    toast({
+      title: "Ponto de Doação Adicionado!",
+      description: `O ponto "${name}" foi adicionado. Ele já está visível na busca.`,
+    });
 
-    } catch (e) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao Adicionar",
-        description: "Você não tem permissão para adicionar pontos de doação.",
-      });
-    }
-
+    // Reset form
+    setName("");
+    setAddress("");
+    setHours("");
+    setAcceptedItems([]);
   };
 
   return (

@@ -51,7 +51,7 @@ export function EditDonationPointDialog({ point, isOpen, onOpenChange }: EditDon
     );
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
 
@@ -65,31 +65,21 @@ export function EditDonationPointDialog({ point, isOpen, onOpenChange }: EditDon
       return;
     }
     
-    try {
-      await updateDonationPoint(point.id, {
-          name,
-          address,
-          hours,
-          acceptedItems,
-          // lat and lng are not editable in this form
-      });
+    updateDonationPoint(point.id, {
+        name,
+        address,
+        hours,
+        acceptedItems,
+        // lat and lng are not editable in this form
+    });
 
-      toast({
-        title: "Ponto de Doação Atualizado!",
-        description: `O ponto "${name}" foi atualizado com sucesso.`,
-      });
-  
-      onOpenChange(false);
+    toast({
+      title: "Ponto de Doação Atualizado!",
+      description: `O ponto "${name}" foi atualizado com sucesso.`,
+    });
 
-    } catch (e) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao Atualizar",
-        description: "Você não tem permissão para editar este ponto de doação.",
-      });
-    } finally {
-        setIsLoading(false);
-    }
+    onOpenChange(false);
+    setIsLoading(false);
   };
 
   return (

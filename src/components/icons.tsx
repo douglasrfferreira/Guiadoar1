@@ -1,8 +1,12 @@
+
+'use client';
 import type { LucideIcon } from 'lucide-react';
 import { Shirt, Apple, ToyBrick, Laptop, Sofa, BookOpen, Tag } from 'lucide-react';
 import type { DonationCategory } from '@/lib/types';
 import { initializeFirebase } from '@/firebase';
 import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 export const staticCategoryIcons: Record<string, LucideIcon> = {
@@ -41,10 +45,20 @@ try {
             }
         } else {
             // If the document doesn't exist, create it with default values
-            setDoc(docRef, { names: categoryNames });
+            setDoc(docRef, { names: categoryNames }).catch(error => {
+              errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'create',
+                requestResourceData: { names: categoryNames }
+              }));
+            });
         }
     }, (error) => {
-        console.error("Error fetching categories:", error);
+        const contextualError = new FirestorePermissionError({
+            operation: 'get',
+            path: docRef.path
+        });
+        errorEmitter.emit('permission-error', contextualError);
     });
 
 } catch(e) {
@@ -62,6 +76,13 @@ export const getCategories = (callback: (categories: Record<DonationCategory, st
             } else {
                 callback(categoryNames);
             }
+        }, (error) => {
+          const contextualError = new FirestorePermissionError({
+              operation: 'get',
+              path: docRef.path
+          });
+          errorEmitter.emit('permission-error', contextualError);
+          callback(categoryNames);
         });
         return unsubscribe;
     } catch(e) {
@@ -71,8 +92,15 @@ export const getCategories = (callback: (categories: Record<DonationCategory, st
     }
 }
 
-export const addCategory = async (key: string, name: string) => {
+export const addCategory = (key: string, name: string) => {
     const newCategoryNames = { ...categoryNames, [key.toLowerCase()]: name };
     const db = getDb();
-    await setDoc(doc(db, "app-config", "categories"), { names: newCategoryNames });
+    const docRef = doc(db, "app-config", "categories");
+    setDoc(docRef, { names: newCategoryNames }).catch(error => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: docRef.path,
+        operation: 'update',
+        requestResourceData: { names: newCategoryNames }
+      }));
+    });
 };

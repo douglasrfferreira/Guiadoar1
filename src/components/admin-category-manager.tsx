@@ -23,7 +23,7 @@ export function AdminCategoryManager() {
     return () => unsubscribe();
   }, []);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!newCategoryKey || !newCategoryName) {
       toast({
@@ -33,22 +33,13 @@ export function AdminCategoryManager() {
       });
       return;
     }
-    try {
-      await addCategory(newCategoryKey, newCategoryName);
-      toast({
-        title: "Categoria Adicionada!",
-        description: `A categoria "${newCategoryName}" foi adicionada com sucesso.`,
-      });
-      setNewCategoryKey("");
-      setNewCategoryName("");
-    } catch (error) {
-      console.error("Failed to add category:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao Adicionar",
-        description: "Não foi possível adicionar a nova categoria.",
-      });
-    }
+    addCategory(newCategoryKey, newCategoryName);
+    toast({
+      title: "Categoria Adicionada!",
+      description: `A categoria "${newCategoryName}" foi adicionada com sucesso.`,
+    });
+    setNewCategoryKey("");
+    setNewCategoryName("");
   };
 
   return (

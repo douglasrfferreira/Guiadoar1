@@ -1,3 +1,4 @@
+
 import type { DonationPoint, UserProfile } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,22 +19,13 @@ export function DonationPointCard({ point, userProfile }: DonationPointCardProps
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (confirm(`Tem certeza que deseja excluir o ponto "${point.name}"?`)) {
-      try {
-        await deleteDonationPoint(point.id);
-        toast({
-          title: "Ponto de Doação Excluído",
-          description: `O ponto "${point.name}" foi removido com sucesso.`,
-        });
-      } catch (error) {
-        console.error("Failed to delete donation point:", error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao Excluir",
-          description: "Não foi possível remover o ponto de doação.",
-        });
-      }
+      deleteDonationPoint(point.id);
+      toast({
+        title: "Ponto de Doação Excluído",
+        description: `O ponto "${point.name}" foi removido com sucesso.`,
+      });
     }
   };
 
