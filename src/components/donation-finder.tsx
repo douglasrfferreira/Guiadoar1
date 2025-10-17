@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import type { DonationPoint } from '@/lib/types';
+import type { DonationPoint, DonationCategory } from '@/lib/types';
 import { donationPoints as allDonationPoints } from '@/lib/donation-points';
 import { haversineDistance } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, LocateFixed, TriangleAlert } from 'lucide-react';
 import { DonationPointList } from './donation-point-list';
 import { useToast } from "@/hooks/use-toast";
+import { categoryNames } from '@/components/icons';
 
 export function DonationFinder() {
   const [itemDescription, setItemDescription] = useState('');
@@ -18,6 +19,18 @@ export function DonationFinder() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const getCategoryFromDescription = (description: string): DonationCategory | null => {
+    if (!description) return null;
+    const lowerCaseDescription = description.toLowerCase().trim();
+    for (const key in categoryNames) {
+      const category = key as DonationCategory;
+      if (categoryNames[category].toLowerCase() === lowerCaseDescription) {
+        return category;
+      }
+    }
+    return null;
+  };
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
@@ -40,7 +53,13 @@ export function DonationFinder() {
       (position) => {
         const { latitude, longitude } = position.coords;
 
-        const pointsWithDistance = allDonationPoints.map(point => ({
+        const searchedCategory = getCategoryFromDescription(itemDescription);
+
+        const filteredPoints = searchedCategory
+          ? allDonationPoints.filter(point => point.acceptedItems.includes(searchedCategory))
+          : allDonationPoints;
+        
+        const pointsWithDistance = filteredPoints.map(point => ({
           ...point,
           distance: haversineDistance(latitude, longitude, point.lat, point.lng),
         }));
@@ -49,6 +68,13 @@ export function DonationFinder() {
 
         setFoundPoints(sortedPoints);
         setIsLoading(false);
+        if (sortedPoints.length === 0 && searchedCategory) {
+          toast({
+            variant: 'default',
+            title: 'Nenhum ponto encontrado',
+            description: `Não encontramos pontos de coleta que aceitem "${itemDescription}". Tente uma busca mais ampla.`,
+          });
+        }
       },
       (geoError) => {
         let errorMessage = "Ocorreu um erro ao obter sua localização.";
@@ -79,7 +105,7 @@ export function DonationFinder() {
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4">
             <Input
               type="text"
-              placeholder="Ex: Roupas de inverno, brinquedos, alimentos não perecíveis..."
+              placeholder="Ex: Roupas, Alimentos, Brinquedos..."
               value={itemDescription}
               onChange={(e) => setItemDescription(e.target.value)}
               className="flex-grow text-base"
@@ -118,7 +144,7 @@ export function DonationFinder() {
       
       {!isLoading && foundPoints.length === 0 && !error && (
         <div className="text-center py-10">
-          <p className="text-muted-foreground">Os pontos de coleta aparecerão aqui após a busca.</p>
+          <p className="text-muted-foreground">Nenhum ponto de coleta encontrado ou a busca ainda não foi realizada.</p>
         </div>
       )}
     </div>
