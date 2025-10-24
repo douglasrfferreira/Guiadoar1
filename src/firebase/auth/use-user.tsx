@@ -61,31 +61,40 @@ export const signUpWithEmailAndPassword = async ({ name, email, password }: Sign
     const { auth, firestore } = initializeFirebase();
     if (!auth || !firestore) throw new Error("Firebase services are not available.");
     
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    // This is now a non-blocking operation.
+    // Errors will be caught by the onAuthStateChanged listener or subsequent operations.
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(async (userCredential) => {
+        const user = userCredential.user;
+        await updateProfile(user, { displayName: name });
 
-    await updateProfile(user, { displayName: name });
-    
-    const userProfileData: UserProfile = {
-        uid: user.uid,
-        email: user.email!,
-        name: name,
-        role: 'user', 
-    };
-
-    const docRef = doc(firestore, 'users', user.uid);
-    // Use non-blocking setDoc and chain a .catch for error handling
-    setDoc(docRef, userProfileData).catch(error => {
-      // Create and emit a contextual permission error
-      const permissionError = new FirestorePermissionError({
-        path: docRef.path,
-        operation: 'create', // Explicitly 'create' for a new user profile
-        requestResourceData: userProfileData
+        const userProfileData: UserProfile = {
+            uid: user.uid,
+            email: user.email!,
+            name: name,
+            role: 'user', 
+        };
+        const docRef = doc(firestore, 'users', user.uid);
+        
+        // Use non-blocking setDoc and chain a .catch for error handling
+        setDoc(docRef, userProfileData).catch(error => {
+          // Create and emit a contextual permission error
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'create', // Explicitly 'create' for a new user profile
+            requestResourceData: userProfileData
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          // Also, re-throw or handle the original auth error if needed,
+          // but for permission errors, the emitter is key.
+        });
+      })
+      .catch((error) => {
+        // Handle auth errors like 'auth/email-already-in-use'
+        // This doesn't create a FirestorePermissionError because it's an auth issue.
+        // The UI component's catch block will handle this.
+        throw error;
       });
-      errorEmitter.emit('permission-error', permissionError);
-    });
-
-    return userCredential;
 };
 
 const _signInWithEmail = (auth: ReturnType<useAuth>) => async ({ email, password }: SignInForm) => {
@@ -113,3 +122,4 @@ export function useSignOut() {
 }
 
 import { initializeFirebase } from '..';
+
