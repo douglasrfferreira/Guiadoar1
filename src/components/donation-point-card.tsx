@@ -1,5 +1,5 @@
 
-import type { DonationPoint, UserProfile } from '@/lib/types';
+import type { DonationPoint } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, PackageCheck, Pencil, Trash2 } from 'lucide-react';
@@ -12,10 +12,9 @@ import { useState } from 'react';
 
 interface DonationPointCardProps {
   point: DonationPoint;
-  userProfile: UserProfile | null;
 }
 
-export function DonationPointCard({ point, userProfile }: DonationPointCardProps) {
+export function DonationPointCard({ point }: DonationPointCardProps) {
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -29,24 +28,20 @@ export function DonationPointCard({ point, userProfile }: DonationPointCardProps
     }
   };
 
-  const isAdmin = userProfile?.role === 'admin';
-
   return (
     <>
       <Card className="flex flex-col h-full bg-card hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <div className="flex justify-between items-start">
             <CardTitle className="font-headline text-xl text-primary">{point.name}</CardTitle>
-            {isAdmin && (
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditDialogOpen(true)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditDialogOpen(true)}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <CardDescription className="flex items-start gap-2 pt-2 text-foreground">
             <MapPin className="h-5 w-5 mt-1 shrink-0 text-muted-foreground" />
@@ -84,13 +79,11 @@ export function DonationPointCard({ point, userProfile }: DonationPointCardProps
           </CardFooter>
         )}
       </Card>
-      {isAdmin && (
-        <EditDonationPointDialog
-          point={point}
-          isOpen={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-        />
-      )}
+      <EditDonationPointDialog
+        point={point}
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+      />
     </>
   );
 }

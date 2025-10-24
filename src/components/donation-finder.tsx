@@ -12,7 +12,6 @@ import { Loader2, LocateFixed, TriangleAlert } from 'lucide-react';
 import { DonationPointList } from './donation-point-list';
 import { useToast } from "@/hooks/use-toast";
 import { categoryNames, getCategories } from '@/components/icons';
-import { useUser } from '@/firebase';
 
 export function DonationFinder() {
   const [itemDescription, setItemDescription] = useState('');
@@ -21,7 +20,6 @@ export function DonationFinder() {
   const [error, setError] = useState<string | null>(null);
   const [allDonationPoints, setAllDonationPoints] = useState<DonationPoint[]>([]);
   const { toast } = useToast();
-  const { profile } = useUser();
   const [currentCategories, setCurrentCategories] = useState(categoryNames);
 
   useEffect(() => {
@@ -158,7 +156,7 @@ export function DonationFinder() {
       )}
 
       {!isLoading && foundPoints.length > 0 && (
-        <DonationPointList points={foundPoints} userProfile={profile} />
+        <DonationPointList points={foundPoints} />
       )}
       
       {!isLoading && foundPoints.length === 0 && !error && (

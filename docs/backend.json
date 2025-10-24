@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "DonationItem": {
@@ -77,86 +78,15 @@
         "latitude",
         "longitude"
       ]
-    },
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a user of the application.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the user."
-        },
-        "email": {
-          "type": "string",
-          "description": "The email address of the user.",
-          "format": "email"
-        },
-        "locationLat": {
-          "type": "number",
-          "description": "The latitude of the user's location"
-        },
-        "locationLon": {
-          "type": "number",
-          "description": "The longitude of the user's location"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "email"
-      ]
     }
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },
   "firestore": {
     "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles. The 'userId' is the Firebase Auth UID. Access is restricted to the authenticated user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The Firebase Auth UID of the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/donationItems/{donationItemId}",
-        "definition": {
-          "entityName": "DonationItem",
-          "schema": {
-            "$ref": "#/backend/entities/DonationItem"
-          },
-          "description": "Stores donation items created by the user. Access is restricted to the authenticated user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The Firebase Auth UID of the user who created the donation item."
-            },
-            {
-              "name": "donationItemId",
-              "description": "The unique ID of the donation item."
-            }
-          ]
-        }
-      },
       {
         "path": "/donationPoints/{donationPointId}",
         "definition": {
@@ -173,7 +103,6 @@
           ]
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to securely manage user data, donation items, and donation points for the GuiaDoar application. It prioritizes authorization independence to ensure robust security rules and efficient data access. The core structure consists of three main collections: `users`, `donationItems`, and `donationPoints`. \n\n*   **Users:** User data is stored under the `/users/{userId}` path. This private data follows Path-Based ownership. Only the authenticated user can access their own data.\n*   **DonationItems:** Donation items are stored under `/users/{userId}/donationItems/{donationItemId}`. This structure follows Hierarchical Paths for User-Owned Data, enabling easy ownership-based security rules. The `userId` field within the `DonationItem` entity is redundant given that the path already encodes the owner; however, it makes queries easier and more explicit from a data perspective.\n*   **DonationPoints:** Donation points are stored in the `/donationPoints/{donationPointId}` collection. Access to these points is public. They are global and not user-specific.\n\n**Authorization Independence:** This design avoids hierarchical authorization dependencies by not relying on `get()` calls in security rules. Ownership is enforced directly via path-based rules for user and donation items. This ensures that atomic operations (transactions and batches) are not broken and simplifies debugging.\n\n**QAPs (Rules are not Filters):** The structure supports secure `list` operations by segregating data with different access needs into separate collections. Listing donation points is straightforward since they are public. Listing donation items is secure because it is scoped to the user's own collection.\n\nThis design promotes clarity of intent, simplifies security rules, and maintains the integrity of ownership and data consistency across the GuiaDoar application."
+    ]
   }
 }
