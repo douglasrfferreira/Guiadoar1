@@ -74,12 +74,15 @@ export const signUpWithEmailAndPassword = async ({ name, email, password }: Sign
     };
 
     const docRef = doc(firestore, 'users', user.uid);
+    // Use non-blocking setDoc and chain a .catch for error handling
     setDoc(docRef, userProfileData).catch(error => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
+      // Create and emit a contextual permission error
+      const permissionError = new FirestorePermissionError({
         path: docRef.path,
-        operation: 'create',
+        operation: 'create', // Explicitly 'create' for a new user profile
         requestResourceData: userProfileData
-      }));
+      });
+      errorEmitter.emit('permission-error', permissionError);
     });
 
     return userCredential;
