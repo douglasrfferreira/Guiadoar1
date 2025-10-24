@@ -24,11 +24,11 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { SignUpSchema, type SignUpForm } from '@/lib/types';
-import { FirebaseError } from 'firebase/app';
 import Link from 'next/link';
 import { UserPlus } from 'lucide-react';
 import { signUpWithEmailAndPassword } from '@/firebase/auth/use-user';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { FirebaseError } from 'firebase/app';
 
 function SignUpPage() {
   const router = useRouter();
@@ -46,34 +46,38 @@ function SignUpPage() {
 
   async function onSubmit(data: SignUpForm) {
     setIsLoading(true);
-    try {
-      await signUpWithEmailAndPassword(data);
-      toast({
-        title: 'Conta criada com sucesso!',
-        description: 'Você será redirecionado para a página principal.',
-      });
-      router.push('/');
-    } catch (error) {
-      console.error(error);
-      let title = 'Erro ao criar conta';
-      let description = 'Ocorreu um erro inesperado. Tente novamente.';
+    // Removed the try/catch block to allow permission errors to be handled globally.
+    // Auth-specific errors will now be caught in the promise chain.
+    signUpWithEmailAndPassword(data)
+      .then(() => {
+        toast({
+          title: 'Conta criada com sucesso!',
+          description: 'Você será redirecionado para a página principal.',
+        });
+        router.push('/');
+      })
+      .catch((error) => {
+        console.error(error);
+        let title = 'Erro ao criar conta';
+        let description = 'Ocorreu um erro inesperado. Tente novamente.';
 
-      if (error instanceof FirebaseError) {
-        if (error.code === 'auth/email-already-in-use') {
-          title = 'E-mail já cadastrado';
-          description =
-            'Este endereço de e-mail já está em uso. Tente fazer login.';
+        if (error instanceof FirebaseError) {
+          if (error.code === 'auth/email-already-in-use') {
+            title = 'E-mail já cadastrado';
+            description =
+              'Este endereço de e-mail já está em uso. Tente fazer login.';
+          }
         }
-      }
 
-      toast({
-        variant: 'destructive',
-        title,
-        description,
+        toast({
+          variant: 'destructive',
+          title,
+          description,
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    } finally {
-      setIsLoading(false);
-    }
   }
 
   return (
