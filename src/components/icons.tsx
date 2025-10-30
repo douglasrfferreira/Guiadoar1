@@ -96,7 +96,7 @@ export const addCategory = (key: string, name: string) => {
     const newCategoryNames = { ...categoryNames, [key.toLowerCase()]: name };
     const db = getDb();
     const docRef = doc(db, "app-config", "categories");
-    setDoc(docRef, { names: newCategoryNames }).catch(error => {
+    setDoc(docRef, { names: newCategoryNames }, { merge: true }).catch(error => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: docRef.path,
         operation: 'update',
@@ -104,3 +104,4 @@ export const addCategory = (key: string, name: string) => {
       }));
     });
 };
+

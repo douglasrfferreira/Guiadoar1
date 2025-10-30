@@ -1,7 +1,7 @@
 
 'use client';
 import type { DonationPoint } from './types';
-import { collection, addDoc, onSnapshot, query, Firestore, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, Firestore, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -86,3 +86,4 @@ export const deleteDonationPoint = (pointId: string) => {
       )
     });
 }
+

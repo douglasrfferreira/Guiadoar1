@@ -1,36 +1,6 @@
 
 {
   "entities": {
-    "DonationItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "DonationItem",
-      "type": "object",
-      "description": "Represents an item that a user wants to donate.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the DonationItem entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User who is donating the item. (Relationship: User 1:N DonationItem)"
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of item being donated (e.g., clothes, books, furniture)."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the item."
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "type",
-        "description"
-      ]
-    },
     "DonationPoint": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "DonationPoint",
@@ -78,6 +48,21 @@
         "latitude",
         "longitude"
       ]
+    },
+    "AppConfig": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AppConfig",
+      "type": "object",
+      "description": "Stores global application configuration.",
+      "properties": {
+        "categories": {
+          "type": "object",
+          "description": "A map of donation categories.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "auth": {
@@ -88,19 +73,23 @@
   "firestore": {
     "structure": [
       {
-        "path": "/donationPoints/{donationPointId}",
+        "path": "/donation-points/{donationPointId}",
         "definition": {
           "entityName": "DonationPoint",
           "schema": {
-            "$ref": "#/backend/entities/DonationPoint"
+            "$ref": "#/entities/DonationPoint"
           },
-          "description": "Stores donation points. Access is public.",
-          "params": [
-            {
-              "name": "donationPointId",
-              "description": "The unique ID of the donation point."
-            }
-          ]
+          "description": "Stores donation points. Access is public."
+        }
+      },
+      {
+        "path": "/app-config/{configId}",
+        "definition": {
+          "entityName": "AppConfig",
+          "schema": {
+            "$ref": "#/entities/AppConfig"
+          },
+          "description": "Stores global app configuration like categories."
         }
       }
     ]
