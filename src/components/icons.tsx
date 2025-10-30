@@ -46,11 +46,12 @@ try {
         } else {
             // If the document doesn't exist, create it with default values
             setDoc(docRef, { names: categoryNames }).catch(error => {
-              errorEmitter.emit('permission-error', new FirestorePermissionError({
+              const contextualError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'create',
                 requestResourceData: { names: categoryNames }
-              }));
+              });
+              errorEmitter.emit('permission-error', contextualError);
             });
         }
     }, (error) => {
@@ -62,6 +63,8 @@ try {
     });
 
 } catch(e) {
+    // This case would likely be an initialization error, which is handled elsewhere.
+    // We can console.error here as it's not a permission error.
     console.error("Could not connect to Firestore to get categories", e);
 }
 
@@ -97,11 +100,11 @@ export const addCategory = (key: string, name: string) => {
     const db = getDb();
     const docRef = doc(db, "app-config", "categories");
     setDoc(docRef, { names: newCategoryNames }, { merge: true }).catch(error => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
+      const contextualError = new FirestorePermissionError({
         path: docRef.path,
         operation: 'update',
         requestResourceData: { names: newCategoryNames }
-      }));
+      });
+      errorEmitter.emit('permission-error', contextualError);
     });
 };
-
