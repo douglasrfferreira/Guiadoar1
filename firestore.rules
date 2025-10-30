@@ -3,81 +3,42 @@
  * @version Prototyping
  *
  * @description
- * This ruleset enforces a strict user-ownership model for user profiles and donation items,
- * while allowing public read access to donation points. Schema validation is relaxed for prototyping.
+ * This ruleset enforces a public-read model for donation points and app configuration,
+ * while restricting all write operations. This is a temporary, permissive setup for
+ * early development and prototyping.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profiles, where {userId} is the Firebase Auth UID.
- * - /users/{userId}/donationItems/{donationItemId}: Stores donation items owned by the user.
- * - /donationPoints/{donationPointId}: Stores public donation point information.
+ * - /donation-points/{donationPointId}: Stores public donation point information.
+ * - /app-config/{configId}: Stores global application configuration, like categories.
  *
  * Key Security Decisions:
- * - Users can only access their own profile data and donation items.
- * - Listing donation items is restricted to the owning user.
- * - Donation points are publicly readable.
- * - Write access to donation points is currently denied to everyone and must be explicitly granted in the future.
- * - All write operations are validated to ensure the document exists before modification or deletion.
- *
- * Denormalization for Authorization:
- * - The userId is encoded in the path for both /users/{userId} and /users/{userId}/donationItems/{donationItemId}, enabling path-based ownership checks.
+ * - Donation points and app config are publicly readable to all users (authenticated or not).
+ * - All write operations (create, update, delete) are currently denied for all collections.
+ *   This is a safeguard during prototyping. Future rules will grant specific write
+ *   permissions to authenticated administrators.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secure user profiles. Only the authenticated user can read and write their own data.
-     * @path /users/{userId}
+     * @description Donation points are publicly accessible for reading.
+     * Writes are currently denied to all users.
+     * @path /donation-points/{donationPointId}
      */
-    match /users/{userId} {
-      // Helper function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Helper function to check if the authenticated user is the owner of the document
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
-
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
-    }
-
-    /**
-     * @description Secure donation items. Only the owning user can read, create, update, and delete their donation items.
-     * @path /users/{userId}/donationItems/{donationItemId}
-     */
-    match /users/{userId}/donationItems/{donationItemId} {
-      // Helper function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Helper function to check if the authenticated user is the owner of the document
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false; // Listing at this level probably isn't useful and could be expensive
-
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
-    }
-
-    /**
-     * @description Donation points are publicly accessible for reading. Writes are currently denied and require future refinement.
-     * @path /donationPoints/{donationPointId}
-     */
-    match /donationPoints/{donationPointId} {
+    match /donation-points/{donationPointId} {
       allow get, list: if true;
       allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Global application configuration is publicly readable.
+     * Writes are currently denied.
+     * @path /app-config/{configId}
+     */
+    match /app-config/{configId} {
+        allow get, list: if true;
+        allow create, update, delete: if false;
     }
   }
 }
